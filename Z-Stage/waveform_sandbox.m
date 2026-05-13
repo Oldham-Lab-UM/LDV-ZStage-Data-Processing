@@ -15,10 +15,10 @@ clear; clc;
 fl = 2750; % lowest freq (Hold at this frequency) symbol: f_l
 fh = 3000; % highest freq symbol: f_h
 % sweepRate = 200; % Hz per second
+% downsweepTime = (fh-fl)/sweepRate; % Time in seconds that the downsweep lasts before hold symbol: t_down
 
 downsweepTime = 1.29;
 duration = 15;
-% downsweepTime = (fh-fl)/sweepRate; % Time in seconds that the downsweep lasts before hold symbol: t_down
 
 
 % initialize
