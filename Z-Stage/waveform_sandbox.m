@@ -1,5 +1,6 @@
 % Clear
-clear; clc; close all;
+clear; clc;
+% close all;
 
 % ------------------------------ Bookmarks --------------------------------
 % Clear nonlinear response between 2780-2860Hz with following parameters:
@@ -10,10 +11,15 @@ clear; clc; close all;
 % ------------------------------ Bookmarks --------------------------------
 
 % Adjustable downsweep parameters
-duration = 15; % [s] symbol: t_max
+% duration = 5; % [s] symbol: t_max
 fl = 2750; % lowest freq (Hold at this frequency) symbol: f_l
 fh = 3000; % highest freq symbol: f_h
-downsweepTime = 1.29; % Time in seconds that the downsweep lasts before hold symbol: t_down
+% sweepRate = 200; % Hz per second
+
+downsweepTime = 1.29;
+duration = 15;
+% downsweepTime = (fh-fl)/sweepRate; % Time in seconds that the downsweep lasts before hold symbol: t_down
+
 
 % initialize
 daqreset;
@@ -60,7 +66,7 @@ dzdtfilt = lsim(GHPF,LDVgain*data2.V_LDV,t);
 z_down = lsim(Gint*GHPF*GLPF, dzdtfilt, t); 
 
 % Plotting
-close all;
+% close all;
 paramString = sprintf("Duration: %d, Downsweep time: %d, f_h: %d, f_l: %d", duration, downsweepTime, fl, fh); % Define parameter string to encode unique experiment parameters (for reproducibility)
 
 
