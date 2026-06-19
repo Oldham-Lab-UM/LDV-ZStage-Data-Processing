@@ -62,20 +62,25 @@ end
 
 % initialize
 daqreset;
-d = daqlist("ni"); %#ok<*NOPTS>
-deviceinfo1 = d{1,"DeviceInfo"};
+% d = daqlist("ni"); %#ok<*NOPTS>
+% deviceinfo1 = d{1,"DeviceInfo"};
 dq = daq("ni"); %init
 dq.Rate = fs; % Daq rate
+% dqID = 'cDAQ9185-1C61526Mod1';
+dqID = 'Dev1';
 
 % add desired inputs
-addinput(dq,'cDAQ9185-1C61526Mod1','ai0',"Voltage"); % Loopback input (read back input we put in mirror)
-addinput(dq,'cDAQ9185-1C61526Mod1','ai1',"Voltage"); % Output voltage (from LDV)
-addoutput(dq,'cDAQ9185-1C61526Mod2',"ao0","Voltage"); % Input voltage (into mirror)
+vloopPin = "ai0";
+ldvPin = "ai1";
+vinPin = "ao0";
+addinput(dq, dqID, vloopPin,"Voltage"); % Loopback input (read back input we put in mirror)
+addinput(dq, dqID, ldvPin,"Voltage"); % Output voltage (from LDV)
+addoutput(dq, dqID, vinPin,"Voltage"); % Input voltage (into mirror)
 
 % simultaneous acquiring and writing data
 fprintf("Running experiment.\n");
-data = readwrite(dq, downsweep'); % IF SQUARE WAVE ADD AN '
-data = renamevars(data,["cDAQ9185-1C61526Mod1_ai0","cDAQ9185-1C61526Mod1_ai1"], ["V_in","V_LDV"]);
+data = readwrite(dq, downsweep');
+data = renamevars(data, [dqID+"_"+vloopPin, dqID+"_"+ldvPin], ["V_in","V_LDV"]);
 dataTime = seconds(data.Time); % [s] Data time vector in integer form
 
 % Bandpass filter downsweep data
