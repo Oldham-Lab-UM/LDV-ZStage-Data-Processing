@@ -17,8 +17,8 @@ close all;
 % ------------------------------ Bookmarks --------------------------------
 
 % Adjustable downsweep parameters. If fh is lower than fl it becomes upsweep.
-fh = 3000; % highest freq (Start at this frequency)
-fl = 2750; % lowest freq (End at this frequency and maintain)
+Z_HIFREQ = 3000; % highest freq (Start at this frequency)
+Z_LOFREQ = 2750; % lowest freq (End at this frequency and maintain)
 
 % Define downsweep profile via sweeprate
 % sweepRate = 25; % [Hz/s]
@@ -26,11 +26,11 @@ fl = 2750; % lowest freq (End at this frequency and maintain)
 
 % Define downsweep profile via duration
 downsweepTime = 3; % [s] Time in seconds that the downsweep lasts before hold symbol: t_down
-sweepRate = (fh-fl)/downsweepTime;
+sweepRate = (Z_HIFREQ-Z_LOFREQ)/downsweepTime;
 
 duration = 10; % [s]
 
-waveshape = "SAWTOOTH"; % Can be SQUARE, SINE, or SAWTOOTH
+Z_WAVESHAPE = "SAWTOOTH"; % Can be SQUARE, SINE, or SAWTOOTH
 
 % Create piecewise signal.
 % Sweep down from higher frequency into the frequency we want to hold for
@@ -42,18 +42,18 @@ tHold = linspace(downsweepTime, duration, fs*(duration-downsweepTime));
 % t = linspace(0,duration,fs*duration); % t = [tRampup, tHold]; or just total time
 
 % Construct waveform
-rampupSignal = linspace(fh, fl, length(tDownsweep));
-holdSignal = linspace(fl, fl, length(tHold));
+rampupSignal = linspace(Z_HIFREQ, Z_LOFREQ, length(tDownsweep));
+holdSignal = linspace(Z_LOFREQ, Z_LOFREQ, length(tHold));
 fullSignal = [rampupSignal holdSignal];
 
-if strcmp(waveshape, "SINE")
+if strcmp(Z_WAVESHAPE, "SINE")
     fprintf("Sine waveform selected.\n");
     downsweep = amplitude*sin(2*pi*cumsum(fullSignal)/fs); % Sine wave
-elseif strcmp(waveshape, "SQUARE")
+elseif strcmp(Z_WAVESHAPE, "SQUARE")
     fprintf("Square waveform selected.\n");
     downsweep = sin(2*pi*cumsum(fullSignal)/fs); % Sinus wave
     downsweep = duty_cycle(downsweep', 0.5, amplitude); % Square wave, 50% duty cycle (sinus wave definition required).
-elseif strcmp(waveshape, "SAWTOOTH")
+elseif strcmp(Z_WAVESHAPE, "SAWTOOTH")
     fprintf("Sawtooth waveform selected.\n");
     downsweep =  amplitude*sawtooth(2*pi*cumsum(fullSignal)/fs, 1); % Sawtooth wave downsweep from high to low freq and hold low.
 else
@@ -62,20 +62,17 @@ end
 
 % initialize
 daqreset;
-% d = daqlist("ni"); %#ok<*NOPTS>
-% deviceinfo1 = d{1,"DeviceInfo"};
 dq = daq("ni"); %init
 dq.Rate = fs; % Daq rate
-% dqID = 'cDAQ9185-1C61526Mod1';
 dqID = 'Dev1';
 
 % add desired inputs
 vloopPin = "ai0";
 ldvPin = "ai1";
 vinPin = "ao0";
-addinput(dq, dqID, vloopPin,"Voltage"); % Loopback input (read back input we put in mirror)
-addinput(dq, dqID, ldvPin,"Voltage"); % Output voltage (from LDV)
-addoutput(dq, dqID, vinPin,"Voltage"); % Input voltage (into mirror)
+addinput(dq, dqID, vloopPin, "Voltage"); % Loopback input (read back input we put in mirror)
+addinput(dq, dqID, ldvPin, "Voltage"); % Output voltage (from LDV)
+addoutput(dq, dqID, vinPin, "Voltage"); % Input voltage (into mirror)
 
 % simultaneous acquiring and writing data
 fprintf("Running experiment.\n");
@@ -95,13 +92,13 @@ z_down = lsim(Gint*GHPF*GLPF, dzdtfilt, dataTime);
 
 % Plotting
 % close all;
-paramString = sprintf("Duration: %d, Downsweep time: %d, f_h: %d, f_l: %d", duration, downsweepTime, fh, fl); % Define parameter string to encode unique experiment parameters (for reproducibility)
+paramString = sprintf("Duration: %d, Downsweep time: %d, f_h: %d, f_l: %d", duration, downsweepTime, Z_HIFREQ, Z_LOFREQ); % Define parameter string to encode unique experiment parameters (for reproducibility)
 
 fprintf("Displaying plot.\n");
 
 figure();
 subplot(2, 1, 1);
-fTimeDown = linspace(fh,fl,length(dataTime));
+fTimeDown = linspace(Z_HIFREQ,Z_LOFREQ,length(dataTime));
 plot(fTimeDown, z_down);
 title("Displacement vs Frequency (Downsweep)", paramString);
 xlabel("Frequency [Hz]");
@@ -127,7 +124,7 @@ end
 fprintf("Program completed.\n");
 %% Save data file
 % Save time, displacement-frequency plot, and displacement-time plot.
-filename = sprintf("%s,duration-%d,sweeptime-%d,f_h-%d,f_l-%d", waveshape, duration, downsweepTime, fh, fl);
+filename = sprintf("%s,duration-%d,sweeptime-%d,f_h-%d,f_l-%d", Z_WAVESHAPE, duration, downsweepTime, Z_HIFREQ, Z_LOFREQ);
 filename = filename + ".mat";
 save("../Data/"+filename, "dataTime", "fTimeDown", "z_down");
 fprintf("Saved %s to Data/\n", filename);
